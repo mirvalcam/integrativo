@@ -1,0 +1,241 @@
+---
+title: "PCA analysis"
+author: "Miriam Valdayo Camacho"
+date: "2025-02-25"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r cars}
+
+load('C:/Users/miria/Desktop/MADOBIS/analisisintegrativo/Trabajo/data.RData')
+
+source("all_sparse_functions.R")
+
+
+```
+
+## Exploracion inicial de los datos
+
+```{r pressure, echo=FALSE}
+
+gene.expr = scale(genes.rna, center = TRUE, scale = FALSE)
+boxplot(gene.expr[,1:10])
+```
+
+## PCA performing
+
+```{r}
+ 
+mypca = mixOmics::pca(gene.expr, ncomp = 10, center = FALSE, scale = FALSE)
+
+plot(mypca)
+
+```
+
+## Una vez seleccionadas 7 componentes, se hace el PCA 
+
+```{r}
+
+mypca_final = mixOmics::pca(gene.expr, ncomp = 6, center = FALSE, scale = FALSE)
+
+plot(mypca_final)
+
+
+```
+
+```{r}
+library(dplyr)
+hist(clinical$age)
+
+clinical <- clinical %>%
+  mutate(age_group = cut(age, 
+                         breaks = c(0, 40, 50, 60, 70, Inf), 
+                         labels = c("0-40", "40-50", "50-60", "60-70","70-+70"),
+                         right = FALSE))
+```
+
+
+
+```{r, fig.width=12, fig.height=8, echo=FALSE}
+library(mixOmics)
+
+
+plotIndiv(mypca_final, comp = 1:2, 
+          ind.names = NULL,
+          group = outcome$event,
+          # graphical parameters
+          style = "ggplot2", 
+          legend = TRUE, legend.position = "right", 
+          legend.title = "Outcome", ellipse = TRUE, 
+          ellipse.level = 0.95, centroid = FALSE) 
+
+plotIndiv(mypca_final, comp = 1:2, 
+          ind.names = NULL,
+          group = clinical$tobacco_smoking_history,
+          # graphical parameters
+          col = rainbow(5), style = "ggplot2", 
+          legend = TRUE, legend.position = "right", 
+          legend.title = "Smoking", ellipse = TRUE, 
+          ellipse.level = 0.95, centroid = FALSE) 
+plotIndiv(mypca_final, comp = 1:2, 
+          ind.names = NULL,
+          group = clinical$gender,
+          # graphical parameters
+          col = rainbow(2), style = "ggplot2", 
+          legend = TRUE, legend.position = "right", 
+          legend.title = "Gender", ellipse = TRUE, 
+          ellipse.level = 0.95, centroid = FALSE)
+ 
+plotIndiv(mypca_final, comp = 1:2, 
+          ind.names = NULL,
+          group = clinical$age_group,
+          # graphical parameters
+          style = "ggplot2", 
+          legend = TRUE, legend.position = "right", 
+          legend.title = "Smoking", ellipse = TRUE, 
+          ellipse.level = 0.95, centroid = FALSE)
+
+ 
+plotIndiv(mypca_final, comp = 1:2, 
+          ind.names = NULL,
+          group = clinical$alcohol_history_documented,
+          # graphical parameters
+          style = "ggplot2", 
+          legend = TRUE, legend.position = "right", 
+          legend.title = "Alcohol", ellipse = TRUE, 
+          ellipse.level = 0.95, centroid = FALSE)
+
+plotIndiv(mypca_final, comp = 1:2, 
+          ind.names = NULL,
+          group = clinical$lymphnode_neck_dissection,
+          # graphical parameters
+          style = "ggplot2", 
+          legend = TRUE, legend.position = "right", 
+          legend.title = "Lymphnode neck dissection", ellipse = TRUE, 
+          ellipse.level = 0.95, centroid = FALSE)
+
+plotIndiv(mypca_final, comp = 1:2, 
+          ind.names = NULL,
+          group = clinical$stage_event,
+          # graphical parameters
+          style = "ggplot2", color=rainbow(4),
+          legend = TRUE, legend.position = "right", 
+          legend.title = "Stage event", ellipse = TRUE, 
+          ellipse.level = 0.95, centroid = FALSE)
+
+plotIndiv(mypca_final, comp = c(1,6), 
+          ind.names = NULL,
+          group = clinical$neoplasm_histologic_grade,
+          # graphical parameters
+          style = "ggplot2", color=rainbow(3),
+          legend = TRUE, legend.position = "right", 
+          legend.title = "Neoplasm histologic grade", ellipse = TRUE, 
+          ellipse.level = 0.95, centroid = FALSE)
+ 
+
+```
+
+```{r}
+## plotVar(mypca_final, comp = 1:2, var.names = FALSE, pch = 20, cex = 0.5)
+plotLoadings(mypca, comp = 1)
+plotLoadings(mypca, comp = 2)
+plotLoadings(mypca, comp = 3)
+plotLoadings(mypca, comp = 4)
+plotLoadings(mypca, comp = 5)
+plotLoadings(mypca, comp = 6)
+```
+
+
+```{r}
+tf.expr= scale(genes.tf, center = TRUE, scale = FALSE)
+boxplot(tf.expr[,1:10])
+
+```
+
+
+```{r}
+
+pca_tf = mixOmics::pca(tf.expr, ncomp = 10, center = FALSE, scale = FALSE)
+
+plot(pca_tf)
+
+```
+
+```{r}
+
+
+pca_tf_final = mixOmics::pca(gene.expr, ncomp = 5, center = FALSE, scale = FALSE)
+
+plot(pca_tf_final)
+```
+```{r}
+plotIndiv(pca_tf_final, comp = 1:2, 
+          ind.names = NULL,
+          group = clinical$tobacco_smoking_history,
+          # graphical parameters
+          col = rainbow(5), style = "ggplot2", 
+          legend = TRUE, legend.position = "right", 
+          legend.title = "Smoking", ellipse = TRUE, 
+          ellipse.level = 0.95, centroid = FALSE)
+
+plotIndiv(pca_tf_final, comp = 1:2, 
+          ind.names = NULL,
+          group = clinical$gender,
+          # graphical parameters
+          col = rainbow(2), style = "ggplot2", 
+          legend = TRUE, legend.position = "right", 
+          legend.title = "Gender", ellipse = TRUE, 
+          ellipse.level = 0.95, centroid = FALSE)
+
+
+plotIndiv(pca_tf_final, comp = 1:2, 
+          ind.names = NULL,
+          group = clinical$alcohol_history_documented,
+          # graphical parameters
+          style = "ggplot2", 
+          legend = TRUE, legend.position = "right", 
+          legend.title = "Alcohol", ellipse = TRUE, 
+          ellipse.level = 0.95, centroid = FALSE)
+
+plotIndiv(pca_tf_final, comp = 1:2, 
+          ind.names = NULL,
+          group = clinical$lymphnode_neck_dissection,
+          # graphical parameters
+          style = "ggplot2", 
+          legend = TRUE, legend.position = "right", 
+          legend.title = "Lymphnode neck disection", ellipse = TRUE, 
+          ellipse.level = 0.95, centroid = FALSE)
+
+plotIndiv(pca_tf_final, comp = 1:2, 
+          ind.names = NULL,
+          group = clinical$neoplasm_histologic_grade,
+          # graphical parameters
+          style = "ggplot2", color=rainbow(3),
+          legend = TRUE, legend.position = "right", 
+          legend.title = "Neoplasm histologic grade", ellipse = TRUE, 
+          ellipse.level = 0.95, centroid = FALSE)
+
+```
+
+
+```{r}
+plotVar(pca_tf_final, comp = 1:2, var.names = FALSE, pch = 20, cex = 0.5)
+plotLoadings(pca_tf_final, comp = 1)
+plotLoadings(pca_tf_final, comp = 2)
+plotLoadings(pca_tf_final, comp = 3)
+plotLoadings(pca_tf_final, comp = 4)
+plotLoadings(pca_tf_final, comp = 5)
+```
+
+A continuación se procedería a realizar PCA para el siguiente set ómico, mutaciones. Sin embargo, las mutaciones vienen codificadas en factor binario, por lo que no es posible realizar el análisis. 
+
+Jolliffe IT, Cadima J. 2016
+Principal component analysis: a review and
+recent developments. Phil. Trans. R. Soc. A 374:
+20150202.
+http://dx.doi.org/10.1098/rsta.2015.0202

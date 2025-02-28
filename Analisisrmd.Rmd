@@ -1,0 +1,60 @@
+---
+title: "¿Puede nuestro modelo predecir la supervivencia?"
+author: "Miriam Valdayo Camacho"
+date: "2025-02-26"
+output: html_document
+---
+
+## Análisis multi-ómico de RNA-seq, TF y mutaciones a partir de DIABLO y MORE.
+
+El conjunto de datos analizado corresponde a un estudio sobre el Carcinoma Escamoso de Cabeza y Cuello (Head and Neck Squamous Cell Carcinoma, HNSC), compuesto por 443 observaciones en diferentes capas ómicas. Estas ómicas incluyen:
+
+-   **Variables clínicas:** Datos demográficos y médicos de los pacientes.
+
+-   **RNA-Seq:** Perfil de expresión génica de los pacientes, incluidos los genes diferencialmente expresados.
+
+-   **Factores de transcripción (TF)**
+
+-   **Mutaciones:**
+
+-   **Archivo de asociaciones:** Relaciona diferentes elementos biológicos con el fin de comprender su interacción.
+
+Los datos se presentan en archivos individuales en formato .RData, donde cada archivo contiene dos matrices:
+
+-   **X:** La matriz de datos ómicos correspondiente.
+
+-   **Y:** Matriz de supervivencia, que recoge el tiempo de seguimiento de cada paciente y si ha fallecido durante el estudio.
+
+Teniendo en cuenta el set de datos, se va a proceder a la integración de las diferentes ómicas con el objetivo de responder a dos preguntas biológicas clave. ¿Son nuestros datos capaces de predecir la supervivencia de los pacientes? ¿Qué reguladores influyen en el evento?
+
+Para ello, se van a realizar dos integraciones diferentes, primero se hará un MultiBlock-sPLS-DA, a través del software DIABLO, herramienta clave de mixOmics para la integración de múltiples conjuntos de datos en un análisis supervisado, y a continuación MORE (Multi-Omics REgulation) es un paquete de R para modelar la expresión génica en función de variables experimentales, y los posibles reguladores de un gen determinado. El objetivo es identificar reguladores candidatos específicos para el sistema biológico en estudio.
+
+### Exploración de los datos.
+
+```{r}
+
+load('C:/Users/miria/Desktop/MADOBIS/analisisintegrativo/Trabajo/data.RData')
+
+source("all_sparse_functions.R")
+
+```
+
+```{r}
+gene.expr = scale(genes.rna, center = TRUE, scale = FALSE)
+boxplot(gene.expr[,1:10])
+```
+
+```{r}
+mypca = mixOmics::pca(gene.expr, ncomp = 10, center = FALSE, scale = FALSE)
+
+plot(mypca)
+```
+
+En la representación vemos como 10 componentes principales son apenas capaces de explicar la variabilidad de los datos de RNA-seq. Esto se debe a que se pretende reducir la dimensionalidad desde un set de 21520 variables a 10 componentes por combinación lineales de ellas, es decir queremos reducir su dimensionalidad aproximadamente en un 99,95%, lo que da lugar a este porcentaje tan bajo de variabilidad explicado. Como podemos observar, el codo se sitúa entre la componente 6 y 7, por lo que se eligen 7 componentes para continuar con el PCA.
+
+A la hora de representar las representaciones de las componentes enfrentadas, se hizo una modificación en los datos, ya que las edades están recogidas por valores discretos, no por intervalos, a la hora de representar las componentes e intentar diferenciar grupos, el software intentaría separar cada paciente por su edad, lo que no nos daría información del todo. Es por ello que se ha realizado un histograma para ver la distribución de las edades y así poder clasificar correctamente a los pacientes en 6 grupos.
+
+```{r}
+library(dplyr);hist(clinical$age); clinical <- clinical %>%
+mutate(age_group = cut(age, breaks = c(0, 40, 50, 60, 70, Inf), labels = c("0-40", "40-50", "50-60", "60-70","70-+70"), right = FALSE))
+```
